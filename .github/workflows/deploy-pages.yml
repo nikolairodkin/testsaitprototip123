@@ -8,6 +8,9 @@ on:
     branches:
       - main
       - claude/finance-consulting-landing-mc47z6
+    # правка документации не требует передеплоя
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:

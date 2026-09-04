@@ -60,3 +60,36 @@ python3 -m http.server 8000
 
 Чтобы подключить реальную отправку — в `script.js`, функция `initForms()`,
 после `console.log(...)` добавьте `fetch()` на ваш обработчик.
+
+## Публикация в интернете (GitHub Pages)
+
+В репозитории уже лежит workflow `.github/workflows/deploy-pages.yml`:
+он собирает и публикует сайт при каждом пуше в основную ветку,
+а также по кнопке **Run workflow** во вкладке Actions.
+
+Бесплатный GitHub Pages работает только с **публичными** репозиториями, поэтому нужно один раз:
+
+1. **Settings → General → Danger Zone → Change repository visibility → Public**
+   (подтвердить, введя имя репозитория).
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions**
+   (если workflow уже прошёл успешно, этот пункт включится сам).
+3. **Actions → Deploy to GitHub Pages → Run workflow** — либо просто сделать любой пуш.
+
+Через 1–2 минуты сайт будет доступен по адресу:
+
+```
+https://nikolairodkin.github.io/testsaitprototip123/
+```
+
+Дальше при каждом пуше сайт обновляется автоматически.
+
+### Если репозиторий нужно оставить приватным
+
+Бесплатные альтернативы, работающие с приватным кодом:
+
+- **Netlify Drop** — https://app.netlify.com/drop, перетащить папку с `index.html`,
+  `styles.css`, `script.js`. Ссылка выдаётся сразу; чтобы сайт остался навсегда
+  и получил своё имя — бесплатный аккаунт Netlify.
+- **Cloudflare Pages** или **Vercel** — подключить GitHub-репозиторий,
+  сборка не нужна (статика): build command оставить пустым,
+  output directory — корень репозитория.
