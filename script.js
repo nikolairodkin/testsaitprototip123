@@ -110,7 +110,7 @@ const CONFIG = {
     });
     // Заголовок вкладки
     if (CONFIG.brand.name && !CONFIG.brand.name.startsWith('[')) {
-      document.title = CONFIG.brand.name + ' — финансовый учёт и рост прибыли';
+      document.title = CONFIG.brand.name + ' — финансовая система бизнеса и рост прибыли';
     }
   }
 
