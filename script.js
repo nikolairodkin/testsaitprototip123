@@ -44,7 +44,13 @@ const CONFIG = {
     text:  'Заглушка. Кандидаты: сопровождение и контроль результата / масштабирование / регулярная аналитика.'
   },
 
-  /* --- КЕЙСЫ (ЗАГЛУШКА: все цифры условные) --- */
+  /* --- КЕЙСЫ ---
+     Раздел временно выключен: реальных кейсов по текущему методу пока нет,
+     а выдуманные не публикуем.
+     Чтобы вернуть раздел: заменить примеры ниже на реальные кейсы
+     и поставить showCases: true. Пункт «Кейсы» в меню и футере
+     появится автоматически. */
+  showCases: false,
   cases: [
     {
       industry: 'Производство',
@@ -125,8 +131,26 @@ const CONFIG = {
       </li>`).join('');
   }
 
+  /* ---------- Отключаемые разделы ---------- */
+  // Убирает раздел со страницы вместе со ссылками на него (меню, футер)
+  function removeSection(id) {
+    const section = document.getElementById(id);
+    if (section) section.remove();
+    $$('a[href="#' + id + '"]').forEach((a) => {
+      const li = a.closest('li');
+      (li || a).remove();
+    });
+  }
+
+  // Белый и серый фон секций чередуются по порядку,
+  // чтобы после скрытия раздела две секции одного цвета не встали подряд
+  function restripeSections() {
+    $$('main > .section').forEach((s, i) => s.classList.toggle('section--muted', i % 2 === 1));
+  }
+
   /* ---------- Кейсы ---------- */
   function renderCases() {
+    if (!CONFIG.showCases) { removeSection('cases'); return; }
     const box = $('#casesGrid');
     if (!box) return;
     box.innerHTML = CONFIG.cases.map((c) => `
@@ -162,12 +186,10 @@ const CONFIG = {
 
   /* ---------- Отзывы ---------- */
   function renderTestimonials() {
-    const section = $('#testimonials');
-    const box = $('#testimonialsGrid');
-    if (!section || !box) return;
-
     // Секцию можно полностью выключить до сбора реальных отзывов
-    if (!CONFIG.showTestimonials) { section.remove(); return; }
+    if (!CONFIG.showTestimonials) { removeSection('testimonials'); return; }
+    const box = $('#testimonialsGrid');
+    if (!box) return;
 
     box.innerHTML = CONFIG.testimonials.map((t) => `
       <article class="card testimonial reveal">
@@ -385,6 +407,7 @@ const CONFIG = {
     renderCases();
     renderTeam();
     renderTestimonials();
+    restripeSections();
     renderFooterContacts();
     initHeader();
     initModal();
