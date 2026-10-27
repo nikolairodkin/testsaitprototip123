@@ -65,6 +65,9 @@ jobs:
             echo "FAIL $SITE_URL$1 недоступен без авторизации"; return 1
           }
           check ""                               'id="leadFormMain"'
+          check ""                               'name="robots" content="noindex'
+          check ""                               'property="og:image"'
+          check "og-image.jpg"                   ''
           check "styles.css"                     '--c-accent'
           check "script.js"                      'const CONFIG'
           check "img/team/rodkina-galina.webp"   ''
