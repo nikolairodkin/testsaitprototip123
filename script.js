@@ -72,12 +72,52 @@ const CONFIG = {
     }
   ],
 
-  /* --- КОМАНДА, 4 человека (ЗАГЛУШКА) --- */
+  /* --- КОМАНДА ---
+     name / title — подпись под фото.
+     photo — портрет 3:4 (600×800), лежат в img/team/.
+     regalia / role — списки, которые всплывают при наведении на фото
+     (на телефоне — по нажатию). */
   team: [
-    { name: '[Имя Фамилия]', role: '[Роль]', bio: '[Короткое описание опыта: специализация, отрасли, срок работы в профессии.]' },
-    { name: '[Имя Фамилия]', role: '[Роль]', bio: '[Короткое описание опыта: специализация, отрасли, срок работы в профессии.]' },
-    { name: '[Имя Фамилия]', role: '[Роль]', bio: '[Короткое описание опыта: специализация, отрасли, срок работы в профессии.]' },
-    { name: '[Имя Фамилия]', role: '[Роль]', bio: '[Короткое описание опыта: специализация, отрасли, срок работы в профессии.]' }
+    {
+      name: 'Галина Родькина',
+      title: 'Старший партнёр',
+      photo: 'img/team/rodkina-galina.webp',
+      regalia: ['Соучредитель компаний', 'Старший партнёр'],
+      role: [
+        'Осуществляет взаимодействие с клиентами',
+        'Отвечает за разработку, внедрение и эксплуатацию модели, основанной на измеримых показателях эффективности, достаточных для обеспечения полной прозрачности и масштабирования бизнеса'
+      ]
+    },
+    {
+      name: 'Алевтина Мезенцева',
+      title: 'Старший партнёр',
+      photo: 'img/team/mezentseva-alevtina.webp',
+      regalia: ['Соучредитель компании', 'Старший партнёр'],
+      role: [
+        'Отвечает за развитие клиентских отношений и взаимодействие с собственниками компаний, в которых внедряется продукт',
+        'Участвует в принятии ключевых решений, определяющих развитие компании, клиентского направления и масштабирование бизнеса'
+      ]
+    },
+    {
+      name: 'Елизавета Кабалина',
+      title: 'Младший партнёр',
+      photo: 'img/team/kabalina-elizaveta.webp',
+      regalia: ['Соучредитель компании', 'Младший партнёр'],
+      role: [
+        'Отвечает за операционное управление компанией и достижение ежедневных результатов по ключевым направлениям деятельности',
+        'Участвует в принятии ключевых управленческих решений, обеспечивая их последующую реализацию и контроль результатов'
+      ]
+    },
+    {
+      name: 'Николай Родькин',
+      title: 'Младший партнёр',
+      photo: 'img/team/rodkin-nikolay.webp',
+      regalia: ['Соучредитель компании', 'Младший партнёр'],
+      role: [
+        'Отвечает за развитие и автоматизацию бизнес-процессов, обеспечивая эффективное внедрение продукта',
+        'Отвечает за разработку, внедрение и развитие продукта, обеспечивая его эффективную интеграцию в бизнес-процессы клиентов'
+      ]
+    }
   ],
 
   /* --- ОТЗЫВЫ (ЗАГЛУШКА) ---
@@ -169,19 +209,42 @@ const CONFIG = {
   function renderTeam() {
     const box = $('#teamGrid');
     if (!box) return;
-    const photoIcon = `
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none">
-        <circle cx="12" cy="8.5" r="3.6" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>`;
+    const list = (items) => `<ul class="member__list">${items.map((i) => `<li>${i}</li>`).join('')}</ul>`;
     box.innerHTML = CONFIG.team.map((m) => `
-      <article class="card member reveal">
-        <div class="member__photo">${photoIcon}<span>Место под фото</span></div>
-        <h3 class="member__name">${m.name}</h3>
-        <p class="member__role">${m.role}</p>
-        <p class="member__bio">${m.bio}</p>
-        <span class="tag tag--draft">ЗАГЛУШКА</span>
+      <article class="member reveal" tabindex="0">
+        <div class="member__media">
+          <img class="member__photo" src="${m.photo}" alt="${m.name}" width="600" height="800" loading="lazy" decoding="async">
+          <span class="member__toggle" aria-hidden="true"></span>
+          <div class="member__info">
+            <p class="member__label">Регалии</p>
+            ${list(m.regalia)}
+            <p class="member__label">Роль</p>
+            ${list(m.role)}
+          </div>
+        </div>
+        <div class="member__caption">
+          <h3 class="member__name">${m.name}</h3>
+          <p class="member__title">${m.title}</p>
+        </div>
       </article>`).join('');
+  }
+
+  // На экранах без наведения (телефоны, планшеты) регалии открываются нажатием на фото.
+  // С мышью работает :hover в CSS, с клавиатуры — :focus-visible.
+  function initTeamCards() {
+    const cards = $$('.member');
+    if (!cards.length) return;
+    const canHover = () => window.matchMedia('(hover: hover)').matches;
+    const closeAll = (except) => cards.forEach((c) => { if (c !== except) c.classList.remove('is-open'); });
+
+    cards.forEach((card) => card.addEventListener('click', () => {
+      if (canHover()) return;
+      closeAll(card);
+      card.classList.toggle('is-open');
+    }));
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.member')) closeAll();
+    });
   }
 
   /* ---------- Отзывы ---------- */
@@ -413,6 +476,7 @@ const CONFIG = {
     initModal();
     initForms();
     initDraftLinks();
+    initTeamCards();
     initReveal(); // последним: элементы уже отрисованы
   });
 })();
