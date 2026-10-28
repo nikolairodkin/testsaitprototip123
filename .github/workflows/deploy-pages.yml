@@ -39,6 +39,20 @@ jobs:
         with:
           enablement: true
 
+      # Добавляем к адресам стилей, скрипта и фото номер коммита: styles.css?v=1a2b3c4d.
+      # Каждый деплой даёт новые адреса, и браузер не подставит старый файл из кэша.
+      # Меняется только копия на сервере сборки — файлы в репозитории остаются как есть.
+      - name: Stamp asset URLs with the commit
+        run: |
+          v="${GITHUB_SHA::8}"
+          sed -i -e "s#href=\"styles.css\"#href=\"styles.css?v=$v\"#" \
+                 -e "s#src=\"script.js\"#src=\"script.js?v=$v\"#" index.html
+          sed -i "s#\(img/team/[a-z-]*\.webp\)#\1?v=$v#g" script.js
+          grep -q "styles.css?v=$v" index.html
+          grep -q "script.js?v=$v" index.html
+          test "$(grep -c "\.webp?v=$v" script.js)" -eq 4
+          echo "Asset version: $v"
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -65,10 +79,11 @@ jobs:
             echo "FAIL $SITE_URL$1 недоступен без авторизации"; return 1
           }
           check ""                               'id="leadFormMain"'
+          check ""                               'styles.css?v='
           check ""                               'name="robots" content="noindex'
           check ""                               'property="og:image"'
           check "og-image.jpg"                   ''
           check "favicon.svg"                    '<svg'
-          check "styles.css"                     '--c-accent'
+          check "styles.css"                     '--c-accent-light'
           check "script.js"                      'const CONFIG'
           check "img/team/rodkina-galina.webp"   ''
