@@ -352,8 +352,9 @@ button { font: inherit; }
 }
 
 .member {
-  background: var(--c-navy-deep); color: var(--c-white);
-  border-radius: var(--r-lg); padding: 8px;
+  /* рамка вокруг фото — самый светлый зелёный сайта, 4px */
+  background: var(--c-accent-soft); color: var(--c-navy);
+  border-radius: var(--r-lg); padding: 4px;
   box-shadow: var(--sh-md);
   transition: box-shadow .3s var(--ease);
 }
@@ -363,7 +364,7 @@ button { font: inherit; }
 
 .member__media {
   position: relative; overflow: hidden;
-  aspect-ratio: 3 / 4; border-radius: 14px;
+  aspect-ratio: 3 / 4; border-radius: 16px;
   background: var(--c-graphite);
 }
 .member__photo {
@@ -422,9 +423,9 @@ button { font: inherit; }
 .member:focus-visible .member__toggle,
 .member.is-open .member__toggle { transform: rotate(45deg); background: var(--c-accent); color: var(--c-white); }
 
-.member__caption { padding: 14px 10px 8px; }
-.member__name { font-size: 17px; color: var(--c-white); letter-spacing: -.01em; }
-.member__title { margin-top: 2px; font-size: 13px; color: rgba(255,255,255,.6); }
+.member__caption { padding: 14px 12px 10px; }
+.member__name { font-size: 17px; color: var(--c-navy); letter-spacing: -.01em; }
+.member__title { margin-top: 2px; font-size: 13px; color: var(--c-accent-dark); }
 
 /* Отзывы */
 .testimonial { display: flex; flex-direction: column; border-style: dashed; }
