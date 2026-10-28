@@ -32,6 +32,7 @@
   --c-accent:      #12a06a;   /* изумрудно-зелёный — рост прибыли и CTA */
   --c-accent-dark: #0d7f54;
   --c-accent-soft: #e7f6ef;
+  --c-accent-light: #b9f0d6; /* светлая мята: подписи на тёмных блоках, рамки карточек команды */
   --c-danger:      #c8442e;
   --c-white:       #ffffff;
 
@@ -97,7 +98,7 @@ button { font: inherit; }
   padding: 6px 12px; border-radius: var(--r-pill);
   margin-bottom: var(--sp-4);
 }
-.eyebrow--light { color: #b9f0d6; background: rgba(255,255,255,.1); }
+.eyebrow--light { color: var(--c-accent-light); background: rgba(255,255,255,.1); }
 
 .accent-text { color: var(--c-accent); }
 
@@ -352,8 +353,8 @@ button { font: inherit; }
 }
 
 .member {
-  /* рамка вокруг фото — самый светлый зелёный сайта, 4px */
-  background: var(--c-accent-soft); color: var(--c-navy);
+  /* рамка вокруг фото — светлая мята сайта, 4px */
+  background: var(--c-accent-light); color: var(--c-navy);
   border-radius: var(--r-lg); padding: 4px;
   box-shadow: var(--sh-md);
   transition: box-shadow .3s var(--ease);
@@ -425,7 +426,7 @@ button { font: inherit; }
 
 .member__caption { padding: 14px 12px 10px; }
 .member__name { font-size: 17px; color: var(--c-navy); letter-spacing: -.01em; }
-.member__title { margin-top: 2px; font-size: 13px; color: var(--c-accent-dark); }
+.member__title { margin-top: 2px; font-size: 13px; color: var(--c-graphite); }
 
 /* Отзывы */
 .testimonial { display: flex; flex-direction: column; border-style: dashed; }
