@@ -1,0 +1,4 @@
+# Личные настройки окна Obsidian меняются постоянно — в Git их не храним
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.trash/
