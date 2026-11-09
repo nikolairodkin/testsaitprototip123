@@ -1,6 +1,13 @@
 # Автопубликация прототипа на GitHub Pages.
 # Запускается при пуше в ветку с лендингом и вручную (кнопка Run workflow).
 # Требование GitHub: бесплатный Pages доступен только для публичных репозиториев.
+#
+# ЗАКРЫТАЯ ССЫЛКА. Сайт публикуется в папку со случайным именем:
+#   https://nikolairodkin.github.io/testsaitprototip123/<SITE_PATH>/
+# Имя хранится в секрете репозитория SITE_PATH (Settings → Secrets and variables → Actions):
+# в коде его нет, в логах GitHub показывает его как ***.
+# По адресу без папки — «страница не найдена». Если секрет не задан, сайт не публикуется вовсе.
+# Сменить ссылку: поменять значение секрета SITE_PATH и запустить деплой (Run workflow).
 name: Deploy to GitHub Pages
 
 on:
@@ -29,6 +36,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      SITE_PATH: ${{ secrets.SITE_PATH }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,37 +62,70 @@ jobs:
           test "$(grep -c "\.webp?v=$v" script.js)" -eq 4
           echo "Asset version: $v"
 
+      # Сайт кладём в _site/<SITE_PATH>/, в корне — только «страница не найдена».
+      - name: Build the site under the private path
+        run: |
+          mkdir -p _site
+          cat > _site/404.html <<'HTML'
+          <!DOCTYPE html>
+          <html lang="ru"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <meta name="robots" content="noindex, nofollow">
+          <title>Страница не найдена</title>
+          <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f5f7fa;color:#5b6b7f;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}b{display:block;font-size:44px;color:#0f2744}</style>
+          </head><body><p><b>404</b>Страница не найдена</p></body></html>
+          HTML
+          if [ -z "$SITE_PATH" ]; then
+            echo "::warning::Секрет SITE_PATH не задан: сайт не опубликован, по всем адресам — «страница не найдена»."
+            exit 0
+          fi
+          if ! [[ "$SITE_PATH" =~ ^[a-z0-9-]{16,64}$ ]]; then
+            echo "::error::SITE_PATH: нужно 16–64 символа — латинские строчные буквы, цифры, дефис."; exit 1
+          fi
+          dir="_site/$SITE_PATH"
+          mkdir -p "$dir"
+          cp -r index.html styles.css script.js img favicon.svg apple-touch-icon.png og-image.jpg "$dir"/
+          # абсолютные адреса превью (og:url, og:image) — тоже в секретную папку
+          base="https://nikolairodkin.github.io/testsaitprototip123/"
+          sed -i "s#${base}#${base}${SITE_PATH}/#g" "$dir/index.html"
+          grep -q "${base}${SITE_PATH}/og-image.jpg" "$dir/index.html"
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # Открываем опубликованный сайт как обычный посетитель — без авторизации.
-      # Шаг падает, если страница или её файлы недоступны по публичной ссылке.
-      - name: Check the site opens for anyone with the link
+      # Открываем опубликованный сайт как обычный посетитель — без авторизации:
+      # по старому адресу должно быть «не найдено», по секретному — весь сайт.
+      - name: Check the old link is closed and the private one works
         env:
-          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+          ROOT_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
-          check() {
+          expect() {  # expect <адрес> <HTTP-код> [текст, который должен быть в ответе]
             for i in 1 2 3 4 5 6; do
-              code=$(curl -s -o /tmp/resp -w "%{http_code}" "$SITE_URL$1")
-              if [ "$code" = "200" ] && { [ -z "$2" ] || grep -q -- "$2" /tmp/resp; }; then
-                echo "OK  $SITE_URL$1 (HTTP $code)"; return 0
+              code=$(curl -s -o /tmp/resp -w "%{http_code}" "$1")
+              if [ "$code" = "$2" ] && { [ -z "$3" ] || grep -q -- "$3" /tmp/resp; }; then
+                echo "OK  $1 (HTTP $code)"; return 0
               fi
-              echo "... $SITE_URL$1 -> HTTP $code, повтор через 10 с"; sleep 10
+              echo "... $1 -> HTTP $code, ожидаю $2, повтор через 10 с"; sleep 10
             done
-            echo "FAIL $SITE_URL$1 недоступен без авторизации"; return 1
+            echo "FAIL $1: ожидался HTTP $2"; return 1
           }
-          check ""                               'id="leadFormMain"'
-          check ""                               'styles.css?v='
-          check ""                               'name="robots" content="noindex'
-          check ""                               'property="og:image"'
-          check "og-image.jpg"                   ''
-          check "favicon.svg"                    '<svg'
-          check "styles.css"                     '--c-accent-light'
-          check "script.js"                      'const CONFIG'
-          check "img/team/rodkina-galina.webp"   ''
+          expect "$ROOT_URL"                 404
+          expect "${ROOT_URL}index.html"     404
+          expect "${ROOT_URL}styles.css"     404
+          if [ -z "$SITE_PATH" ]; then echo "Сайт скрыт: секрет SITE_PATH не задан."; exit 0; fi
+          S="$ROOT_URL$SITE_PATH/"
+          expect "$S"                               200 'id="leadFormMain"'
+          expect "$S"                               200 'styles.css?v='
+          expect "$S"                               200 'name="robots" content="noindex'
+          expect "$S"                               200 "$SITE_PATH/og-image.jpg"
+          expect "${S}og-image.jpg"                 200
+          expect "${S}favicon.svg"                  200 '<svg'
+          expect "${S}styles.css"                   200 '--c-accent-light'
+          expect "${S}script.js"                    200 'const CONFIG'
+          expect "${S}img/team/rodkina-galina.webp" 200
